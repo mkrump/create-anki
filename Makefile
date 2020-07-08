@@ -1,2 +1,2 @@
 build:
-	go build -o ~/bin/anki
+	go build -o ~/bin/anki-autogen
