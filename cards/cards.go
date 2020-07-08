@@ -192,17 +192,27 @@ type Card struct {
 }
 
 func GetData(word string) (Response, error) {
-	url := "https://www.spanishdict.com/translate/"
-	resp, err := http.Get(fmt.Sprintf("%s/%s", url, word))
+	apiUrl := "https://www.spanishdict.com/"
+	resource := "/translate/"
+	u, _ := url.ParseRequestURI(apiUrl)
+	u.Path = resource
+	u.Path = fmt.Sprintf("%s%s", resource, word)
+	urlStr := u.String() //
+	logger.Infof("%s", urlStr)
+
+	client := &http.Client{}
+	request, _ := http.NewRequest(http.MethodGet, urlStr, nil)
+	request.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
+	resp, err := client.Do(request)
 	if err != nil {
 		return Response{}, err
 	}
 	defer resp.Body.Close()
+	logger.Info(resp.Status)
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return Response{}, err
 	}
-
 	re := regexp.MustCompile(`SD_COMPONENT_DATA(?:\s).*=(?:\s)(.*);`)
 	m := re.FindStringSubmatch(string(body))
 	if len(m) < 2 {
@@ -347,7 +357,7 @@ func makeCard(sense Sense, ankiCollectionsDir string, cloudfront string) (Card, 
 		dir := filepath.Dir(sense.Translations[0].ImagePath)
 		img := fmt.Sprintf("%s/%s", dir, file)
 		imgUrl := fmt.Sprintf("%s%s", cloudfront, strings.Replace(img, "/original/", "/300/", 1))
-		logger.Infof(imgUrl)
+		logger.Info(imgUrl)
 		name := strings.Replace(sense.Subheadword, " ", "_", -1)
 		imgName := fmt.Sprintf("%s%d.jpg", name, time.Now().UnixNano())
 		imgPath := fmt.Sprintf("%s/%s", ankiCollectionsDir, imgName)
@@ -355,7 +365,7 @@ func makeCard(sense Sense, ankiCollectionsDir string, cloudfront string) (Card, 
 		if err != nil {
 			return Card{}, err
 		}
-		logger.Infof("saving image to: %v", imgPath)
+		logger.Infof("saving image to: %s", imgPath)
 		card.Picture = fmt.Sprintf("<img src=\"%s\">", imgName)
 	}
 	card.Infinitive = sense.Subheadword
