@@ -23,7 +23,7 @@ Usage of anki-autogen:
 ### Example
 generate card for word `carta`
 ```
-anki-autogen -word contar -outputFile cards.csv -collectionsDir "/MEDIA_DIR/collection.media"
+anki-autogen -word carta -outputFile cards.csv -collectionsDir "/MEDIA_DIR/collection.media"
 ```
 
 results in `./cards.csv` (cards are appended to this file, so `anki-autogen` can be run repeatedly and all of the cards loaded via a single import)
